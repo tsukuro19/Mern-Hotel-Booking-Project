@@ -1,7 +1,9 @@
 import express, {Request, Response} from 'express';//Rest api
 import cors from 'cors';//security
-import "dotenv/config"
-import mongoose from "mongoose"
+import "dotenv/config";
+import mongoose from "mongoose";
+import userRoutes from './routes/users';
+import authRoutes from './routes/auth';
 
 //Create connect mongodb
 mongoose.connect(process.env.MONGODB_CONNECTION as string);
@@ -15,9 +17,8 @@ app.use(express.urlencoded({extended:true}));
 //this use cors as security with request and response 
 app.use(cors());
 
-app.get("/api/test",async(req:Request, res:Response)=>{
-    res.json({message:"hello"});
-});
+app.use("/api/auth",authRoutes)
+app.use("/api/users",userRoutes);
 
 app.listen(7000,()=>{
     console.log("server running on http://localhost:7000/")
