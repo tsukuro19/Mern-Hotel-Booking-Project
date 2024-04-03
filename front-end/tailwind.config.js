@@ -8,7 +8,9 @@ export default {
   theme: {
     extend: {},
     container:{
-      padding:"5rem"
+      padding:{
+        md:"10rem",
+      }
     }
   },
   plugins: [],
