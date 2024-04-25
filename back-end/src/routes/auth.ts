@@ -4,8 +4,14 @@ import User from "../models/user";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
 import verifyToken from '../middleware/auth';
+import * as passport from "passport";
 
 const router=express.Router();
+
+// /api/auth/login-google
+router.post("/login-google",async (req:Request, res:Response)=>{
+    
+})
 
 // /api/auth/login
 router.post("/login",[

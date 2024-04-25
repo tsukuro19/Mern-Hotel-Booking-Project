@@ -2,12 +2,31 @@ import { useForm } from "react-hook-form"
 import { useMutation, useQueryClient } from "react-query";
 import * as apiClient from "../api-client";
 import { useAppContext } from "../context/AppContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate, } from "react-router-dom";
+import { useEffect } from "react";
 
 export type SignInFormData={
     email:string;
     password:string;
 };
+
+function getCookie(name: string) {
+    const dc: string = document.cookie;
+    const prefix: string = name + "=";
+    let begin: number = dc.indexOf("; " + prefix);
+    if (begin === -1) {
+        begin = dc.indexOf(prefix);
+        if (begin !== 0) return null;
+    } else {
+        begin += 2;
+        let end: number = document.cookie.indexOf(";", begin);
+        if (end === -1) {
+            end = dc.length;
+        }
+        return decodeURI(dc.substring(begin + prefix.length, end));
+    }
+}
+
 
 const SignIn=()=>{
     const {showToast}=useAppContext();
@@ -33,6 +52,17 @@ const SignIn=()=>{
         mutation.mutate(data);
     })
 
+     // Check for the existence of the cookie on component mount
+     useEffect(() => {
+        const checkLoginStatus = async () => {
+            const myCookie = getCookie("auth-token");
+            if (myCookie !== null) {
+                await queryClient.invalidateQueries("validateToken");
+                navigate("/");
+            }
+        };
+        checkLoginStatus();
+    }, [navigate, queryClient]);
 
     return (
         <form className="flex flex-col gap-5" onSubmit={onSubmit}>
@@ -67,9 +97,17 @@ const SignIn=()=>{
                 )}
             </label>
             <span>
-                <button type="submit" className="rounded-md bg-blue-500 text-white p-2 font-bold hover:bg-blue-700">
-                    Login
-                </button>
+                <span className="flex items-center justify-between">
+                    <span className="text-sm">
+                        Not Registered? <Link to="/register" className="underline">Create an account here</Link>
+                    </span>
+                    <button type="submit" className="rounded-md bg-blue-500 text-white p-2 font-bold hover:bg-blue-700">
+                        Login
+                    </button>
+                    <button type="submit" className="rounded-md bg-blue-500 text-white p-2 font-bold hover:bg-blue-700">
+                        Login with Google
+                    </button>
+                </span>
             </span>
         </form>
     )

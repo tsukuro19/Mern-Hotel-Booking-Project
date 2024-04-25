@@ -6,14 +6,16 @@ export type UserType={
     email:string,
     password:string,
     firstName:string,
-    lastName:string
+    lastName:string,
+    profilePicture:string
 };
 
 const userSchema= new mongoose.Schema({
     email:{type:String,required:true, unique:true},
     password:{type:String, required:true},
     firstName:{type:String, required:true},
-    lastName:{type:String,required:true}
+    lastName:{type:String,required:true},
+    profilePicture: {type: String, required: false},
 });
 
 userSchema.pre("save",async function(next){

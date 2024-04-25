@@ -1,3 +1,4 @@
+
 import { useMutation } from "react-query";
 import ManageHotelForm from "../forms/ManageHotelForm/ManageHotelForm";
 import { useAppContext } from "../context/AppContext";
@@ -21,6 +22,12 @@ const AddHotel = () => { //Tao giao dien bang function nay
     };
 
     return <ManageHotelForm onSave={handleSave} isLoading={isLoading}/>;
+
+import ManageHotelForm from "../forms/MangeHotelForm/MangeHotelForm";
+
+const AddHotel=()=>{
+    return <ManageHotelForm/>;
+
 };
 
 export default AddHotel;
