@@ -10,6 +10,7 @@ from "react-router-dom"
 import Layout from "./layouts/Layouts"
 import Register from "./pages/Register"
 import SignIn from "./pages/SignIn";
+import AddHotel from "./pages/AddHotel";
 
 
 function App() {
@@ -40,6 +41,19 @@ function App() {
             </Layout>
           }
         />
+
+        {isLoggedIn && (
+          <>
+            <Route 
+              path="/add-hotel" 
+              element = {
+                <Layout>
+                  <AddHotel/>
+                </Layout>
+              }
+            />
+          </>
+        )}
         <Route path="*" element={<Navigate to="/"/>}/>
       </Routes>
     </Router>
