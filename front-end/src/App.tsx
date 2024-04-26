@@ -14,6 +14,8 @@ import AddHotel from "./pages/AddHotel";
 
 
 import { useAppContext } from "./context/AppContext";
+import MyHotels from "./pages/MyHotels";
+import EditHotel from "./pages/EditHotel";
 
 
 
@@ -51,27 +53,36 @@ function App() {
           />
         </>}
         {isLoggedIn && <>
+            <Route path="/add-hotel" element={
+              <Layout>
+                <AddHotel/>
+              </Layout>
+
+            }
+          />
+        </>}
+
+        {isLoggedIn && <>
           <Route path="/add-hotel" element={
             <Layout>
               <AddHotel/>
             </Layout>
+          }></Route>
+        </>}
 
-          }
-        />
+        {isLoggedIn && <>
+          <Route path="/my-hotels" element={
+            <Layout>
+              <MyHotels/>
+            </Layout>
+          }></Route>
+        </>}
 
-        {isLoggedIn && (
-          <>
-            <Route 
-              path="/add-hotel" 
-              element = {
-                <Layout>
-                  <AddHotel/>
-                </Layout>
-              }
-            />
-          </>
-        )}
-
+        {isLoggedIn && <>
+          <Route path="/edit-hotel/:hotelId" element={
+            <Layout>
+              <EditHotel/>
+            </Layout>
           }></Route>
         </>}
 

@@ -15,7 +15,6 @@ cloudinary.config({
     api_secret:process.env.CLOUDINARY_API_SECRET
 })
 
-import { v2 as cloudinary} from 'cloudinary'
 
 //Create connect mongodb
 mongoose.connect(process.env.MONGODB_CONNECTION as string);
