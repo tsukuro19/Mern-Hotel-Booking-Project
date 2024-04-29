@@ -17,7 +17,7 @@ const AddHotel = () => { //Tao giao dien bang function nay
     });
 
     const handleSave = (hotelFormData: FormData) => {
-        mutate(hotelFormData)
+        mutate(hotelFormData);
     };
 
     return <ManageHotelForm onSave={handleSave} isLoading={isLoading}/>;

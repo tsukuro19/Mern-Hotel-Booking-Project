@@ -26,7 +26,7 @@ type Props = {
     hotel?: HotelType;
     onSave: (HotelFormData: FormData) => void;
     isLoading: boolean;
-}
+};
 
 const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     const formMethods = useForm<HotelFormData>();
