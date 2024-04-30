@@ -38,7 +38,7 @@ const SearchBar = () => {
             <div className="flex flex-row items-center flex-1 bg-white p-2">
                 <MdTravelExplore size={25} className="mr-2"/>
                 <input
-                    placeholder="Where are you doing?"
+                    placeholder="Where are you going?"
                     className="text-md w-full focus:outline-none"
                     value={destination}
                     onChange={(event) => setDestination(event.target.value)}
@@ -47,7 +47,7 @@ const SearchBar = () => {
 
             <div className="flex bg-white px-2 py-1 gap-2">
                 <label className="items-center flex">
-                    Aduld:
+                    Adults:
                     <input
                         className="w-full p-1 focus:outline-none font-bold"
                         type="number"

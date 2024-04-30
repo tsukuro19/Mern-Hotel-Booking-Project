@@ -9,6 +9,8 @@ const Search = () => {
     const search = useSearchContext();
     const [page, setPage] = useState<number>(1);
 
+    console.log(search);
+
     const searchParams = {
         destination: search.destination,
         checkIn: search.checkIn.toISOString(),

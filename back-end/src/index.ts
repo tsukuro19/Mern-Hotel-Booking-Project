@@ -8,7 +8,7 @@ import cookieParser from "cookie-parser";
 import {initialize,session} from "passport";
 import {v2 as cloudinary} from "cloudinary";
 import myHotelRoutes from "./routes/my-hotels";
-import hotelRoutes from "./routes/hotel";
+import hotelRoutes from "./routes/hotels";
 
 cloudinary.config({
     cloud_name:process.env.CLOUDINARY_CLOUD_NAME,
