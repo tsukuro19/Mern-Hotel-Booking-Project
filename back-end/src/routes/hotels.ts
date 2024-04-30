@@ -7,12 +7,21 @@ const router = express.Router();
 // /api/hotels/search
 router.get("/search", async (req: Request, res: Response) => {
     try {
-        const country = req.query.destination?.toString() || "";
-        const checkIn=req.query.checkIn?.toString()||"";
-        const checkOut=req.query.checkOut?.toString()||"";
-        const adultCount=req.query.adultCount?.toString()||"";
-        const childCount=req.query.childCount?.toString()||"";
-        let hotels,total;
+        const query = constructSearchQuery(req.query);
+
+        let sortOptions = {};
+        switch(req.query.sortOption){
+            case "starRating":
+                sortOptions={starRating:-1};
+                break;
+            case "pricePerNightAsc":
+                sortOptions={pricePerNight:1};
+                break;
+            case "pricePerNightDesc":
+                sortOptions={pricePerNight:-1};
+                break;
+        }
+
         const pageSize = 5;
         const pageNumber = parseInt(
             req.query.page ? req.query.page.toString() : "1"
@@ -20,13 +29,8 @@ router.get("/search", async (req: Request, res: Response) => {
         const skip = (pageNumber - 1) * pageSize;
 
          // Check if the destination query parameter is provided and not empty
-         if (req.query.destination && req.query.destination !== "") {
-            hotels = await Hotel.find({ country,adultCount,childCount }).skip(skip).limit(pageSize);
-            total = await Hotel.find({ country,adultCount,childCount }).countDocuments();
-        } else {
-            hotels = await Hotel.find().skip(skip).limit(pageSize);
-            total = await Hotel.countDocuments();
-        }
+         const hotels=await Hotel.find(query).sort(sortOptions).skip(skip).limit(pageSize);
+         const total=await Hotel.countDocuments(query);
 
 
         const response : HotelSearchResponse = {
@@ -43,5 +47,57 @@ router.get("/search", async (req: Request, res: Response) => {
         res.status(500).json({ message: "Something went wrong" });
     }
 });
+
+const constructSearchQuery= (queryParams:any)=>{
+    let constructedQuery: any = {};
+
+    if (queryParams.destination) {
+        constructedQuery.$or = [
+        { city: new RegExp(queryParams.destination, "i") },
+        { country: new RegExp(queryParams.destination, "i") },
+        ];
+    }
+
+    if (queryParams.adultCount) {
+        constructedQuery.adultCount = {
+        $gte: parseInt(queryParams.adultCount),
+        };
+    }
+
+    if (queryParams.childCount) {
+        constructedQuery.childCount = {
+        $gte: parseInt(queryParams.childCount),
+        };
+    }
+
+    if(queryParams.facilities){
+        constructedQuery.facilities={
+            $all: Array.isArray(queryParams.facilities)
+            ? queryParams.facilities
+            :[queryParams.facilities],
+        };
+    }
+
+    if(queryParams.types){
+        constructedQuery.type={
+            $in:Array.isArray(queryParams.types)
+            ? queryParams.types
+            :[queryParams.types],
+        };
+    }
+
+    if(queryParams.stars){
+        const starRatings=parseInt(queryParams.stars.toString());
+        constructedQuery.starRating={$eq:starRatings};
+    }
+
+    if(queryParams.maxPrice){
+        constructedQuery.pricePerNight={
+            $lte: parseInt(queryParams.maxPrice).toString(),
+        };
+    }
+
+    return constructedQuery;
+}
 
 export default router;
