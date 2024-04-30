@@ -8,6 +8,10 @@ const router = express.Router();
 router.get("/search", async (req: Request, res: Response) => {
     try {
         const country = req.query.destination?.toString() || "";
+        const checkIn=req.query.checkIn?.toString()||"";
+        const checkOut=req.query.checkOut?.toString()||"";
+        const adultCount=req.query.adultCount?.toString()||"";
+        const childCount=req.query.childCount?.toString()||"";
         let hotels,total;
         const pageSize = 5;
         const pageNumber = parseInt(
@@ -17,8 +21,8 @@ router.get("/search", async (req: Request, res: Response) => {
 
          // Check if the destination query parameter is provided and not empty
          if (req.query.destination && req.query.destination !== "") {
-            hotels = await Hotel.find({ country }).skip(skip).limit(pageSize);
-            total = await Hotel.find({ country }).countDocuments();
+            hotels = await Hotel.find({ country,adultCount,childCount }).skip(skip).limit(pageSize);
+            total = await Hotel.find({ country,adultCount,childCount }).countDocuments();
         } else {
             hotels = await Hotel.find().skip(skip).limit(pageSize);
             total = await Hotel.countDocuments();
