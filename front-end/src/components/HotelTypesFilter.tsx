@@ -18,7 +18,7 @@ const HotelTypesFilter= ({selectedHotelTypes, onChange}:Props)=>{
                         checked={selectedHotelTypes.includes(hotelType)} 
                         onChange={onChange}
                     />
-                    <span>{hotelType} Stars</span>
+                    <span>{hotelType}</span>
                 </label>
             ))}
         </div>
