@@ -5,8 +5,11 @@ import { useSearchContext } from "../context/SearchContext";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import BookingDetailsSummary from "../components/BookingDetailsSummary";
+import { useAppContext } from "../context/AppContext";
+import { Elements } from "@stripe/react-stripe-js";
 
 const Booking = () => {
+    const {stripePromise}=useAppContext();
     const search = useSearchContext();
     const { hotelId } = useParams();
 
@@ -21,11 +24,25 @@ const Booking = () => {
         }
     }, [search.checkIn, search.checkOut]);
 
-    const { data: hotel } = useQuery(
-        "fetchHotelByID", 
-        () =>  apiClient.fetchMyHotelById(hotelId as string), 
+    const { data: paymentIntentData } = useQuery(
+        "createPaymentIntent",
+        () =>
+          apiClient.createPaymentIntent(
+            hotelId as string,
+            numberOfNights.toString()
+          ),
         {
-            enabled: !!hotelId,
+          enabled: !!hotelId && numberOfNights > 0,
+        }
+      );
+
+      console.log(paymentIntentData);
+
+    const {data:hotel}=useQuery(
+        "fetchHotelById",
+        ()=>apiClient.fetchHotelById(hotelId || ""),
+        {
+            enabled:!!hotelId,
         }
     );
 
@@ -34,11 +51,11 @@ const Booking = () => {
         apiClient.fetchCurrentUser
     );
 
+    
     if (!hotel) {
-        return <></>;
+        return <>Not have hotel</>;
     }
     
-    console.log(currentUser?.email);
 
     return (
         <div className="grid md:grid-cols-[1fr_2fr]">
@@ -50,7 +67,16 @@ const Booking = () => {
                 numberOfNights={numberOfNights}
                 hotel={hotel}
             />     
-            {currentUser && <BookingForm currentUser={currentUser}/>}
+            {currentUser && paymentIntentData && (
+                <Elements 
+                    stripe={stripePromise}
+                    options={{
+                        clientSecret: paymentIntentData.clientSecret,
+                      }}   
+                >
+                     <BookingForm currentUser={currentUser} paymentIntent={paymentIntentData}/>
+                </Elements>
+            )}
         </div>
     );
 };

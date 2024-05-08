@@ -93,6 +93,7 @@ import MyHotels from "./pages/MyHotels";
 import EditHotel from "./pages/EditHotel";
 import Search from "./pages/Search";
 import Detail from "./pages/Details";
+import Booking from "./pages/Booking";
 //import Detail from "./pages/Detail";
 //import Booking from "./pages/Booking";
 //import MyBookings from "./pages/MyBookings";
@@ -152,7 +153,7 @@ const App = () => {
               element={
                 <Layout>
                   {/* <Booking /> */}
-                  <p>Booking</p>
+                  <Booking/>
                 </Layout>
               }
             />
