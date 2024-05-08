@@ -92,6 +92,7 @@ import { useAppContext } from "./context/AppContext";
 import MyHotels from "./pages/MyHotels";
 import EditHotel from "./pages/EditHotel";
 import Search from "./pages/Search";
+import Detail from "./pages/Details";
 //import Detail from "./pages/Detail";
 //import Booking from "./pages/Booking";
 //import MyBookings from "./pages/MyBookings";
@@ -120,14 +121,13 @@ const App = () => {
           }
         />
         <Route
-          path="/detail/:hotelId"
-          element={
-            <Layout>
-              {/* <Detail /> */}
-              <p>Detail</p>
-            </Layout>
-          }
-        />
+              path="/detail/:hotelId"
+              element={
+                <Layout>
+                  <Detail/>
+                </Layout>
+              }
+            />
         <Route
           path="/register"
           element={
