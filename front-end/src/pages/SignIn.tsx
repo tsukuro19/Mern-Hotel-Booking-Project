@@ -4,11 +4,25 @@ import * as apiClient from "../api-client";
 import { useAppContext } from "../context/AppContext";
 import { Link, useLocation, useNavigate, } from "react-router-dom";
 import { useEffect } from "react";
-
+import {GoogleLogin} from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 export type SignInFormData={
     email:string;
     password:string;
 };
+
+export type GoogleSignInToken = string;
+
+export type SignInWithGoogleResponse = {
+    user: {
+        id: string;
+        email: string;
+        name: string;
+        // Add other user properties here
+    };
+    token: string;
+};
+
 
 function getCookie(name: string) {
     const dc: string = document.cookie;
@@ -33,6 +47,17 @@ const SignIn=()=>{
     const navigate=useNavigate();
     const queryClient = useQueryClient();
     const location=useLocation();
+
+    const googleMutation = useMutation(apiClient.signInWithGoogle, {
+        onSuccess: async () => {
+            showToast({ message: "Google login successful", type: "SUCCESS" });
+            await queryClient.invalidateQueries("validateToken");
+            navigate(location.state?.from?.pathname || "/");
+        },
+        onError: (error: Error) => {
+            showToast({ message: error.message, type: "ERROR" });
+        }
+    });
 
     const {register,
         formState:{errors},
@@ -105,11 +130,21 @@ const SignIn=()=>{
                     <button type="submit" className="rounded-md bg-blue-500 text-white p-2 font-bold hover:bg-blue-700">
                         Login
                     </button>
-                    <button type="submit" className="rounded-md bg-blue-500 text-white p-2 font-bold hover:bg-blue-700">
-                        Login with Google
-                    </button>
                 </span>
             </span>
+            <GoogleLogin
+                onSuccess={credentialResponse => {
+                    const token = credentialResponse.credential;
+                    if (token) {
+                        googleMutation.mutate(token);
+                    } else {
+                        showToast({ message: "Google login failed", type: "ERROR" });
+                    }
+                }}
+                onError={() => {
+                    showToast({ message: "Google login failed", type: "ERROR" });
+                }}
+            />
         </form>
     )
 };

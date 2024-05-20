@@ -1,5 +1,5 @@
 import { RegisterFormData } from "./pages/Register";
-import { SignInFormData } from "./pages/SignIn";
+import { SignInFormData,SignInWithGoogleResponse, GoogleSignInToken} from "./pages/SignIn";
 import { HotelType, PaymentIntentResponse } from "../../back-end/src/shared/types";
 import { HotelSearchResponse, UserType } from "../../back-end/src/shared/types";
 import { PaymentIntent } from "@stripe/stripe-js";
@@ -31,6 +31,23 @@ export const register=async (formData:RegisterFormData)=>{
     if(!response.ok){
         throw new Error(responseBody.message);
     }
+};
+
+export const signInWithGoogle = async (token: GoogleSignInToken): Promise<SignInWithGoogleResponse> => {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login-google`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ token })
+    });
+
+    const responseBody = await response.json();
+    if (!response.ok) {
+        throw new Error(responseBody.message);
+    }
+    return responseBody;
 };
 
 export const signIn=async (formData:SignInFormData)=>{
@@ -168,6 +185,14 @@ export const searchHotels = async (searchParams: SearchParams) : Promise<HotelSe
     return response.json();
 };
 
+export const fetchHotels = async (): Promise<HotelType[]> => {
+    const response = await fetch(`${API_BASE_URL}/api/hotels`);
+    if (!response.ok) {
+      throw new Error("Error fetching hotels");
+    }
+    return response.json();
+};
+
 export const fetchHotelById=async (hotelId:String): Promise<HotelType>=>{
     const response= await fetch(`${API_BASE_URL}/api/hotels/${hotelId}`);
     if(!response.ok){
@@ -217,4 +242,16 @@ export const createRoomBooking = async (formData: BookingFormData) => {
     if (!response.ok) {
       throw new Error("Error booking room");
     }
+  };
+
+  export const fetchMyBookings = async (): Promise<HotelType[]> => {
+    const response = await fetch(`${API_BASE_URL}/api/my-bookings`, {
+      credentials: "include",
+    });
+    
+    if (!response.ok) {
+      throw new Error("Unable to fetch bookings");
+    }
+  
+    return response.json();
   };

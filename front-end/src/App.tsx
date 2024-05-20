@@ -82,6 +82,7 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import Layout from "./layouts/Layouts";
 import Register from "./pages/Register";
 import SignIn from "./pages/SignIn";
@@ -94,6 +95,8 @@ import EditHotel from "./pages/EditHotel";
 import Search from "./pages/Search";
 import Detail from "./pages/Details";
 import Booking from "./pages/Booking";
+import Home from "./pages/Home";
+import MyBookings from "./pages/MyBookings";
 //import Detail from "./pages/Detail";
 //import Booking from "./pages/Booking";
 //import MyBookings from "./pages/MyBookings";
@@ -102,14 +105,14 @@ import Booking from "./pages/Booking";
 const App = () => {
   const { isLoggedIn } = useAppContext();
   return (
+    <GoogleOAuthProvider clientId="808290140719-lc5hdfdevhc72b9771qfhq9i065d4vf8.apps.googleusercontent.com">
     <Router>
       <Routes>
         <Route
           path="/"
           element={
             <Layout>
-              {/* <Home /> */}
-              <p>Home</p>
+              <Home />
             </Layout>
           }
         />
@@ -186,8 +189,7 @@ const App = () => {
               path="/my-bookings"
               element={
                 <Layout>
-                  {/* <MyBookings /> */}
-                  <p>MyBookings</p>
+                  <MyBookings/>
                 </Layout>
               }
             />
@@ -196,6 +198,7 @@ const App = () => {
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
+    </GoogleOAuthProvider>
   );
 };
 
