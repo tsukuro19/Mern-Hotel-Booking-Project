@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { PaymentIntentResponse, UserType } from "../../../../back-end/src/shared/types"
+import { PaymentIntentResponse, UserType } from "../../../../back-end/src/shared/types";
 import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { StripeCardElement } from "@stripe/stripe-js";
 import { useNavigate, useParams } from "react-router-dom";
@@ -24,34 +24,34 @@ export type BookingFormData = {
     hotelId: string;
     paymentIntentId: string;
     totalCost: number;
+    paymentMethod: string;
 };
 
 const BookingForm = ({ currentUser, paymentIntent }: Props) => {
-    const stripe=useStripe();
-    const element=useElements();
-    const navigate=useNavigate();
+    const stripe = useStripe();
+    const elements = useElements();
+    const navigate = useNavigate();
 
     const search = useSearchContext();
     const { hotelId } = useParams();
 
     const { showToast } = useAppContext();
 
-
     const { mutate: bookRoom, isLoading } = useMutation(
         apiClient.createRoomBooking,
         {
-          onSuccess: () => {
-            showToast({ message: "Booking Saved!", type: "SUCCESS" });
-            navigate("/my-bookings");
-          },
-          onError: () => {
-            showToast({ message: "Error saving booking", type: "ERROR" });
-          },
+            onSuccess: () => {
+                showToast({ message: "Booking Saved!", type: "SUCCESS" });
+                navigate("/my-bookings");
+            },
+            onError: () => {
+                showToast({ message: "Error saving booking", type: "ERROR" });
+            },
         }
-      );
+    );
 
-    const { handleSubmit, register } = useForm<BookingFormData>({
-        defaultValues:{
+    const { handleSubmit, register, watch } = useForm<BookingFormData>({
+        defaultValues: {
             firstName: currentUser.firstName,
             lastName: currentUser.lastName,
             email: currentUser.email,
@@ -59,38 +59,46 @@ const BookingForm = ({ currentUser, paymentIntent }: Props) => {
             childCount: search.childCount,
             checkIn: search.checkIn.toISOString(),
             checkOut: search.checkOut.toISOString(),
-            hotelId: hotelId,
+            hotelId: hotelId!,
             totalCost: paymentIntent.totalCost,
             paymentIntentId: paymentIntent.paymentIntentId,
+            paymentMethod: "card",
         },
     });
 
+    const paymentMethod = watch("paymentMethod");
+
     const onSubmit = async (formData: BookingFormData) => {
-        if(!stripe || !element){
-            return;
-        }
-
-        const result= await stripe.confirmCardPayment(paymentIntent.clientSecret,{
-            payment_method:{
-                card:element.getElement(CardElement) as StripeCardElement
+        if (formData.paymentMethod === "card") {
+            if (!stripe || !elements) {
+                return;
             }
-        });
 
-        if(result.paymentIntent?.status==="succeeded"){
-            //book room
-            bookRoom({...formData,paymentIntentId:result.paymentIntent.id});
+            const result = await stripe.confirmCardPayment(paymentIntent.clientSecret, {
+                payment_method: {
+                    card: elements.getElement(CardElement) as StripeCardElement
+                }
+            });
+
+            if (result.paymentIntent?.status === "succeeded") {
+                // Book room
+                bookRoom({ ...formData, paymentIntentId: result.paymentIntent.id });
+            }
+        } else {
+            // For cash payment
+            bookRoom(formData);
         }
-    }
+    };
 
     return (
         <form
-        onSubmit={handleSubmit(onSubmit)} 
-        className="grid grid-cols-1 gap-5 rounded-lg border border-slate-300 p-5">
-            <span className="text-3xl font-bold">Confirm Your Datails</span>
+            onSubmit={handleSubmit(onSubmit)}
+            className="grid grid-cols-1 gap-5 rounded-lg border border-slate-300 p-5">
+            <span className="text-3xl font-bold">Confirm Your Details</span>
             <div className="grid grid-cols-2 gap-6">
                 <label className="text-gray-700 text-sm font-bold flex-1">
                     First Name
-                    <input 
+                    <input
                         className="mt-1 border rounded w-full py-2 px-3 text-gray-700 bg-gray-200 font-normal"
                         type="text"
                         readOnly
@@ -101,7 +109,7 @@ const BookingForm = ({ currentUser, paymentIntent }: Props) => {
 
                 <label className="text-gray-700 text-sm font-bold flex-1">
                     Last Name
-                    <input 
+                    <input
                         className="mt-1 border rounded w-full py-2 px-3 text-gray-700 bg-gray-200 font-normal"
                         type="text"
                         readOnly
@@ -112,7 +120,7 @@ const BookingForm = ({ currentUser, paymentIntent }: Props) => {
 
                 <label className="text-gray-700 text-sm font-bold flex-1">
                     Email
-                    <input 
+                    <input
                         className="mt-1 border rounded w-full py-2 px-3 text-gray-700 bg-gray-200 font-normal"
                         type="text"
                         readOnly
@@ -133,12 +141,35 @@ const BookingForm = ({ currentUser, paymentIntent }: Props) => {
 
             <div className="space-y-2">
                 <h3 className="text-xl font-semibold">Payment Details</h3>
-                <CardElement id="payment-element" className="border rounded-md p-2 text-sm"/>
+                <div>
+                    <label className="text-gray-700 text-sm font-bold flex-1">
+                        <input
+                            type="radio"
+                            value="card"
+                            {...register("paymentMethod")}
+                            defaultChecked
+                        />
+                        Credit Card
+                    </label>
+                    <label className="text-gray-700 text-sm font-bold flex-1 ml-4">
+                        <input
+                            type="radio"
+                            value="cash"
+                            {...register("paymentMethod")}
+                        />
+                        Pay with Cash
+                    </label>
+                </div>
+                <div id="payment-element-container">
+                    {paymentMethod === "card" && (
+                        <CardElement id="payment-element" className="border rounded-md p-2 text-sm"/>
+                    )}
+                </div>
             </div>
 
             <div className="flex justify-end">
                 <button disabled={isLoading} type="submit" className="bg-blue-600 text-white p-2 font-bold hover:bg-blue-500 text-md">
-                    {isLoading?"Saving...":"Confirm Booking"}
+                    {isLoading ? "Saving..." : "Confirm Booking"}
                 </button>
             </div>
         </form>

@@ -3,7 +3,7 @@ import Hotel from "../models/hotel";
 import { BookingType, HotelSearchResponse } from "../shared/types";
 import {param, validationResult} from "express-validator";
 import Stripe from "stripe";
-import verifyToken from "../middleware/auth";
+import {verifyToken,emailNotification} from "../middleware/auth";
 
 const stripe=new Stripe(process.env.STRIPE_API_KEY as string);
 
@@ -123,57 +123,93 @@ router.post(
 );
 
 router.post(
-    "/:hotelId/bookings",
-    verifyToken,
-    async (req: Request, res: Response) => {
-      try {
-        const paymentIntentId = req.body.paymentIntentId;
-  
+  "/:hotelId/bookings",
+  verifyToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { paymentMethod, paymentIntentId } = req.body;
+
+      if (paymentMethod === "card") {
         const paymentIntent = await stripe.paymentIntents.retrieve(
           paymentIntentId as string
         );
-  
+
+        const hotelName=await Hotel.find({
+          _id:req.params.hotelId
+        });
+
         if (!paymentIntent) {
           return res.status(400).json({ message: "payment intent not found" });
         }
-  
+
         if (
           paymentIntent.metadata.hotelId !== req.params.hotelId ||
           paymentIntent.metadata.userId !== req.userId
         ) {
           return res.status(400).json({ message: "payment intent mismatch" });
         }
-  
+
         if (paymentIntent.status !== "succeeded") {
           return res.status(400).json({
             message: `payment intent not succeeded. Status: ${paymentIntent.status}`,
           });
         }
-  
+
         const newBooking: BookingType = {
           ...req.body,
           userId: req.userId,
+          paymentSuccess: "success"
         };
-  
+
         const hotel = await Hotel.findOneAndUpdate(
           { _id: req.params.hotelId },
           {
             $push: { bookings: newBooking },
           }
         );
-  
+
         if (!hotel) {
           return res.status(400).json({ message: "hotel not found" });
         }
-  
+
+        await hotel.save();
+        if (hotelName.length > 0) {
+          const hotelNameValue = hotelName[0].name;
+          await emailNotification(req.body.email, hotelNameValue,req.body.totalCost);
+        } else {
+          // Handle the case when no hotel is found
+        }
+        res.status(200).send();
+      } else if (paymentMethod === "cash") {
+        const newBooking: BookingType = {
+          ...req.body,
+          userId: req.userId,
+          paymentSuccess: "pending"
+        };
+
+        const hotel = await Hotel.findOneAndUpdate(
+          { _id: req.params.hotelId },
+          {
+            $push: { bookings: newBooking },
+          }
+        );
+
+        if (!hotel) {
+          return res.status(400).json({ message: "hotel not found" });
+        }
+
         await hotel.save();
         res.status(200).send();
-      } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "something went wrong" });
+      } else {
+        res.status(400).json({ message: "Invalid payment method" });
       }
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "something went wrong" });
     }
-  );
+  }
+);
+
 
 const constructSearchQuery= (queryParams:any)=>{
     let constructedQuery: any = {};

@@ -1,5 +1,7 @@
 import { RegisterFormData } from "./pages/Register";
 import { SignInFormData,SignInWithGoogleResponse, GoogleSignInToken} from "./pages/SignIn";
+import {ForgetPasswordForm} from "./pages/ForgetPassword";
+import {ChangePasswordForm} from "./pages/ChangePassword";
 import { HotelType, PaymentIntentResponse } from "../../back-end/src/shared/types";
 import { HotelSearchResponse, UserType } from "../../back-end/src/shared/types";
 import { PaymentIntent } from "@stripe/stripe-js";
@@ -67,17 +69,58 @@ export const signIn=async (formData:SignInFormData)=>{
     return responseBody;
 };
 
+export const forgetPassword= async(formData:ForgetPasswordForm)=>{
+    const response=await fetch(`${API_BASE_URL}/api/auth/forget-password`,{
+        method:"POST",
+        credentials:"include",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify(formData)
+    })
+
+    const responseBody=await response.json();
+    if(!response.ok){
+        throw new Error(responseBody.message);
+    }
+    return responseBody;
+}
+
+export const changePassword=async(userId:string,formData:ChangePasswordForm)=>{
+    const response=await fetch(`${API_BASE_URL}/api/auth/new-password/${userId}`,{
+        method:"POST",
+        credentials:"include",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify(formData)
+    })
+
+    const responseBody=await response.json();
+    if(!response.ok){
+        throw new Error(responseBody.message);
+    }
+    return responseBody;
+}
+
 export const validateToken=async ()=>{
     const response=await fetch(`${API_BASE_URL}/api/auth/validate-token`,{
         credentials:"include"
     });
 
     if(!response.ok){
-        throw new Error("Token invalid");
+        if(response.status===404){
+            throw new Error("Email has not been verified");
+        }else{
+            //unauthorized
+            throw new Error("Token invalid");
+        }
     }
 
     return response.json();
 };
+
+
 
 
 export const signOut=async()=>{
@@ -255,3 +298,62 @@ export const createRoomBooking = async (formData: BookingFormData) => {
   
     return response.json();
   };
+
+  export const fetchMyBookingsWithId = async (): Promise<HotelType[]> => {
+    const response = await fetch(`${API_BASE_URL}/api/my-bookings/:id`, {
+      credentials: "include",
+    });
+    
+    if (!response.ok) {
+      throw new Error("Unable to fetch bookings");
+    }
+  
+    return response.json();
+  };
+
+  export const fetchMyBookingsWithHotelId = async (): Promise<HotelType[]> => {
+    const response = await fetch(`${API_BASE_URL}/api/my-hotels/:hotelId`, {
+      credentials: "include",
+    });
+    
+    if (!response.ok) {
+      throw new Error("Unable to fetch bookings");
+    }
+  
+    return response.json();
+  };
+
+
+export const updatePaymentUser=async(paymentId:string,hotelId:string)=>{
+    const response = await fetch(
+        `${API_BASE_URL}/api/my-hotels/${hotelId}/${paymentId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+    
+      if (!response.ok) {
+        throw new Error("Error booking room");
+      }
+}
+
+export const updatePaymentUserRefund=async(paymentId:string,hotelId:string)=>{
+    const response = await fetch(
+        `${API_BASE_URL}/api/my-hotels/refund/${hotelId}/${paymentId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+    
+      if (!response.ok) {
+        throw new Error("Error booking room");
+      }
+}

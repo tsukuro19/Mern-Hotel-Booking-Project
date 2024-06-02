@@ -1,9 +1,9 @@
-import express,{Request,Response} from 'express';
+import express,{Request,Response, response} from 'express';
 import { check, validationResult } from "express-validator";
 import User from "../models/user";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
-import verifyToken from '../middleware/auth';
+import {verifyToken,forgetPassword} from '../middleware/auth';
 import * as passport from "passport";
 import { jwtDecode } from "jwt-decode";
 
@@ -13,6 +13,8 @@ const router=express.Router();
 router.post("/login-google", async (req: Request, res: Response) => {
     try {
         const { token } = req.body;
+        const passwordGoogle=RandomPassword();
+
         if (!token) {
             return res.status(400).json({ message: "Token is required" });
         }
@@ -49,6 +51,8 @@ router.post("/login-google", async (req: Request, res: Response) => {
                 email,
                 firstName: given_name,
                 lastName: family_name,
+                password: passwordGoogle,
+                verify:true
             });
 
             await user.save();
@@ -89,11 +93,15 @@ router.post("/login",[
     try{
         const user=await User.findOne({email});
         if(!user){
-            return res.status(400).json({message:"Invalid Credentials"});
+            return res.status(400).json({message:"Cannot find user"});
         }
         const isMatch= await bcrypt.compare(password,user.password);
         if(!isMatch){
-            return res.status(400).json({message:"Invalid Credentials"});
+            return res.status(400).json({message:"Wrong Password"});
+        }
+
+        if(user.verify===false){
+            return res.status(400).json({message:"Please verify your email"});
         }
         const token=jwt.sign(
             {userId:user.id},
@@ -114,9 +122,63 @@ router.post("/login",[
     }
 })
 
+// /api/auth/forget-password
+router.post("/forget-password",[
+    check("email","Email is required").isEmail()
+],async(req:Request, res:Response)=>{
+    const errors=validationResult(req);
+    if(!errors.isEmpty()){
+        res.status(400).json({message:errors.array()});
+    }
+
+    const {email}=req.body;
+    try{
+        const user=await User.findOne({email});
+        if(!user){
+            return res.status(400).json({message:"Cannot find user"});
+        }
+        return res.status(200).json({user:user});
+    }catch(error){
+        console.log(error);
+        res.status(500).json({message:"Something went wrong"});
+    }
+})
+
+router.post("/new-password/:userId",[
+    check("password","Password with 6 or more characters is required").isLength({
+        min:6
+    })
+],async(req:Request, res:Response)=>{
+    try{
+        const { userId } = req.params;
+        const { password } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 8);
+        
+        const user=await User.findOneAndUpdate({
+            _id:userId
+        },{
+            password:hashedPassword
+        })
+        await(user?.save())
+        res.status(200).json({message:"Changed password"});
+    }catch(error){
+        console.log(error);
+        res.status(500).json({message:"Something went wrong"});
+    }
+})
+
 // /api/auth/validate-token
-router.get("/validate-token",verifyToken,(req:Request,res:Response)=>{
-    res.status(200).send({userId:req.userId})
+router.get("/validate-token",verifyToken,async (req:Request,res:Response)=>{
+    try{
+        const user=await User.findOne({_id:req.userId});
+        if(user?.verify===false){
+            res.status(404).send({message:"Please verify your email"});
+        }else{
+            res.status(200).send({userId:req.userId})
+        }
+    }catch(error){
+        console.log(error);
+    }
 });
 
 // /api/auth/logout
@@ -126,5 +188,20 @@ router.post("/logout",(req:Request, res:Response)=>{
     });
     res.send();
 });
+
+const RandomPassword=()=>{
+    const length=12;
+    const upperCase="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lowerCase="abcdefghijklmnopqrstuvwxyz";
+    const number="0123456789";
+    const symbol=`~!@#$%^&*()-_=+[{]}\|;:'",<.>/?`;
+    const allChar=upperCase+lowerCase+number+symbol;
+
+    let password="";
+    while(length>password.length){
+        password+=allChar[Math.floor(Math.random()*allChar.length)];
+    }
+    return password;
+}
 
 export default router;

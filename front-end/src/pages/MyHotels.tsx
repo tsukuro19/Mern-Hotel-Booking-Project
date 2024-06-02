@@ -49,7 +49,7 @@ const MyHotels= ()=>{
                         </div>
                         <span className="flex space-x-4 justify-end">
                             <div><Link to={`/edit-hotel/${hotel._id}`} className="flex bg-blue-600 text-white text-xl font-bold p-2 hover:bg-blue-500">View Details</Link></div>
-                            <div><Link to={`/edit-hotel/${hotel._id}`} className="flex bg-blue-600 text-white text-xl font-bold p-2 hover:bg-blue-500">Check Booking</Link></div>
+                            <div><Link to={`/list-booking/${hotel._id}`} className="flex bg-blue-600 text-white text-xl font-bold p-2 hover:bg-blue-500">Check Booking</Link></div>
                         </span>
                     </div>
                 ))}

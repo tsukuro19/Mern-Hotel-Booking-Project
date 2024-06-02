@@ -2,7 +2,7 @@ import express, {Request, Response} from "express";
 import multer from 'multer';
 import cloudinary from "cloudinary";
 import Hotel from "../models/hotel";
-import verifyToken from "../middleware/auth";
+import {verifyToken} from "../middleware/auth";
 import { body } from "express-validator";
 import { HotelType } from "../shared/types";
 
@@ -81,6 +81,8 @@ router.get("/:id", verifyToken, async (req: Request, res: Response) => {
     }
   });
 
+
+
 router.put(
     "/:hotelId",
     verifyToken,
@@ -113,6 +115,70 @@ router.put(
         }
     }
 )
+
+router.get("/:hotelId",verifyToken,async(req:Request,res:Response)=>{
+    try{
+        const hotels=await Hotel.find({
+            _id:req.body.params
+        });
+        res.status(200).send(hotels);
+    }catch(error){
+        console.log(error);
+        res.status(500).json({ message: "Unable to fetch bookings" });
+    }
+})
+
+router.put("/:hotelId/:paymentId", verifyToken, async (req: Request, res: Response) => {
+    try {
+      const { hotelId, paymentId = req.body.params } = req.params;
+      console.log(paymentId);
+      const hotels=await Hotel.find({
+        _id:hotelId
+      });
+      
+      
+      hotels[0].bookings.map((payment)=>{
+        if(payment._id==paymentId){
+            console.log(payment);
+            payment.paymentSuccess="success";
+            console.log(payment);
+        }
+      })
+
+      await hotels[0].save();
+  
+      res.status(200).json(hotels[0]);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Unable to fetch bookings" });
+    }
+  });
+
+  router.put("/refund/:hotelId/:paymentId", verifyToken, async (req: Request, res: Response) => {
+    try {
+      const { hotelId, paymentId = req.body.params } = req.params;
+      console.log(paymentId);
+      const hotels=await Hotel.find({
+        _id:hotelId
+      });
+      
+      
+      hotels[0].bookings.map((payment)=>{
+        if(payment._id==paymentId){
+            console.log(payment);
+            payment.paymentSuccess="refund";
+            console.log(payment);
+        }
+      })
+
+      await hotels[0].save();
+  
+      res.status(200).json(hotels[0]);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Unable to fetch bookings" });
+    }
+  });
 
 
 

@@ -4,7 +4,8 @@ export type UserType={
   password:string,
   firstName:string,
   lastName:string,
-  profilePicture:string
+  profilePicture:string,
+  verify:boolean
 };
 
 export type HotelType = {
@@ -36,6 +37,7 @@ export type BookingType = {
   checkIn: Date;
   checkOut: Date;
   totalCost: number;
+  paymentSuccess:string;
 };
 
 export type HotelSearchResponse = {

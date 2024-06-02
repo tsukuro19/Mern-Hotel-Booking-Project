@@ -5,7 +5,6 @@ import { useAppContext } from "../context/AppContext";
 import { Link, useLocation, useNavigate, } from "react-router-dom";
 import { useEffect } from "react";
 import {GoogleLogin} from "@react-oauth/google";
-import { jwtDecode } from "jwt-decode";
 export type SignInFormData={
     email:string;
     password:string;
@@ -123,10 +122,15 @@ const SignIn=()=>{
                 )}
             </label>
             <span>
-                <span className="flex items-center justify-between">
-                    <span className="text-sm">
+                <span className="flex flex-row">
+                    <span className="text-sm basis-1/4">
                         Not Registered? <Link to="/register" className="underline">Create an account here</Link>
                     </span>
+                    <span className="text-sm">
+                        <Link to="/forget-password">Forget Password</Link>
+                    </span>
+                </span>
+                <span className="flex items-center justify-between">
                     <button type="submit" className="rounded-md bg-blue-500 text-white p-2 font-bold hover:bg-blue-700">
                         Login
                     </button>

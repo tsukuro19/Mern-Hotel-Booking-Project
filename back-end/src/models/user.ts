@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { UserType } from "../shared/types";
+import { verify } from 'crypto';
 
 const userSchema= new mongoose.Schema({
     email:{type:String,required:true, unique:true},
@@ -8,6 +9,7 @@ const userSchema= new mongoose.Schema({
     firstName:{type:String, required:true},
     lastName:{type:String,required:true},
     profilePicture: {type: String, required: false},
+    verify:{type:Boolean,default:false},
 });
 
 userSchema.pre("save",async function(next){

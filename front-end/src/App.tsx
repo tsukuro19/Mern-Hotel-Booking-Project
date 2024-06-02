@@ -97,6 +97,9 @@ import Detail from "./pages/Details";
 import Booking from "./pages/Booking";
 import Home from "./pages/Home";
 import MyBookings from "./pages/MyBookings";
+import ForgetPassword from "./pages/ForgetPassword";
+import ChangePassword from "./pages/ChangePassword";
+import ListBookings from "./pages/ListBooking";
 //import Detail from "./pages/Detail";
 //import Booking from "./pages/Booking";
 //import MyBookings from "./pages/MyBookings";
@@ -132,6 +135,8 @@ const App = () => {
                 </Layout>
               }
             />
+
+
         <Route
           path="/register"
           element={
@@ -148,6 +153,24 @@ const App = () => {
             </Layout>
           }
         />
+
+        <Route
+          path="/forget-password"
+          element={
+            <Layout>
+              <ForgetPassword/>
+            </Layout>
+          }
+        />
+
+        <Route
+            path="/change-password/:userId"
+            element={
+              <Layout>
+                <ChangePassword/>
+              </Layout>
+            }
+          />
 
         {isLoggedIn && (
           <>
@@ -174,6 +197,15 @@ const App = () => {
               element={
                 <Layout>
                   <EditHotel />
+                </Layout>
+              }
+            />
+
+          <Route
+              path="/list-booking/:hotelId"
+              element={
+                <Layout>
+                  <ListBookings/>
                 </Layout>
               }
             />

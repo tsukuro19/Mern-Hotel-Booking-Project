@@ -51,6 +51,12 @@ const MyBookings=()=>{
                         {booking.totalCost}
                       </span>
                     </div>
+                    <div>
+                    <span className="font-bold mr-2">Status: </span>
+                      <span>
+                        {booking.paymentSuccess}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
